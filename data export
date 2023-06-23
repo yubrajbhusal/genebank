@@ -1,0 +1,42 @@
+import zipfile
+import io
+import pandas as pd
+import pyreadstat
+import tempfile
+import shutil
+import ssaw
+from ssaw.models import ExportJob
+from ssaw import ExportApi
+import os
+import time
+
+client = ssaw.Client('https://capi.pbg.com.np',
+    token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjM2OGFjNWUwZWM0NTdlOTc5N2ZkNGVkMTM3NzU2NCIsImp0aSI6ImZiY2QzNmIwYTBmNTRlYWU5MGU1MWRjMGMyNzhlZjI5IiwibmJmIjoxNjg0MzEzNDY1LCJleHAiOjE3MDAwODE0NjUsImlzcyI6IlN1cnZleS5Tb2x1dGlvbnMiLCJhdWQiOiJBbGwifQ.y0XUMDgGRBAaU69R5Nd10Is-joEWDw1RDXGOxX3Eja0')
+
+job = ExportJob(questionnaire_id="be36f7a70f4846b0af0edef451eec21c$3", export_type="SPSS", interview_status='Completed')
+r = ExportApi(client).start(job, wait=True,show_progress=True)
+filename = ExportApi(client).get(export_type="SPSS",questionnaire_identity="be36f7a70f4846b0af0edef451eec21c$3", interview_status='Completed')
+
+
+
+
+
+
+zip_file_path = filename
+
+# Name of the .sav file within the zip file
+sav_file_name = 'Badimalika_Household_Final.sav'
+
+with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+    # Extract the .sav file to a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        zip_file.extract(sav_file_name, temp_dir)
+
+        # Specify the extracted .sav file path
+        extracted_file_path = f"{temp_dir}/{sav_file_name}"
+
+        # Load the .sav file using pyreadstat
+        #df, metadata = pyreadstat.read_sav(extracted_file_path)
+        df, metadata = pyreadstat.read_sav(extracted_file_path, apply_value_formats=True)
+        
+df
